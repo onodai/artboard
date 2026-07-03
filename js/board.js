@@ -18,7 +18,6 @@ function renderBoard() {
       cell.addEventListener('click', () => openThreadModal(post));
     } else {
       cell.classList.add('cell-empty');
-      cell.textContent = '＋';
       cell.addEventListener('click', () => openPostModal(i));
     }
 
@@ -47,8 +46,33 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function ensureNickname() {
+  return new Promise((resolve) => {
+    const existing = getNickname();
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+
+    const gate = document.getElementById('nickname-gate');
+    const form = document.getElementById('nickname-form');
+    gate.classList.remove('hidden');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = form.nickname.value.trim();
+      if (!name) return;
+
+      setNickname(name);
+      gate.classList.add('hidden');
+      resolve(name);
+    });
+  });
+}
+
 async function initBoard() {
   getUserId();
+  await ensureNickname();
 
   try {
     const posts = await fetchPosts();

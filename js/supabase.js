@@ -1,4 +1,5 @@
 const USER_ID_KEY = 'artboard_user_id';
+const NICKNAME_KEY = 'artboard_nickname';
 const PREVIEW_LENGTH = 12;
 
 let supabaseClient = null;
@@ -20,6 +21,14 @@ function getUserId() {
     localStorage.setItem(USER_ID_KEY, userId);
   }
   return userId;
+}
+
+function getNickname() {
+  return localStorage.getItem(NICKNAME_KEY);
+}
+
+function setNickname(name) {
+  localStorage.setItem(NICKNAME_KEY, name);
 }
 
 function truncateText(text, maxLength = PREVIEW_LENGTH) {
@@ -45,6 +54,7 @@ async function createPost(cellNumber, text) {
     .insert({
       cell_number: cellNumber,
       text: text.trim(),
+      author_name: getNickname(),
       updated_at: now,
       last_activity_at: now,
     })
@@ -83,6 +93,7 @@ async function createComment(postId, text) {
     .insert({
       post_id: postId,
       text: text.trim(),
+      author_name: getNickname(),
     })
     .select()
     .single();
@@ -128,8 +139,4 @@ function subscribeToComments(onInsert) {
     .subscribe();
 
   return channel;
-}
-
-function formatDateTime(isoString) {
-  return new Date(isoString).toLocaleString('ja-JP');
 }

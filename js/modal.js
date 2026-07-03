@@ -31,10 +31,9 @@ function showError(container, message) {
 
 function openPostModal(cellNumber) {
   modalContent.innerHTML = `
-    <h2>投稿（マス ${cellNumber}）</h2>
     <form class="modal-form" id="post-form">
-      <textarea name="text" placeholder="本文を入力" required maxlength="500"></textarea>
-      <button type="submit">投稿する</button>
+      <textarea name="text" required maxlength="500"></textarea>
+      <button type="submit" aria-label="投稿する">✓</button>
     </form>
   `;
 
@@ -65,21 +64,24 @@ async function openThreadModal(post) {
   openThreadPostId = post.id;
 
   modalContent.innerHTML = `
-    <div class="thread-post">${escapeHtml(post.text)}</div>
-    <p class="thread-meta">投稿: ${formatDateTime(post.created_at)}</p>
-    <h2>コメント</h2>
-    <ul class="comments" id="comments-list"></ul>
-    <form class="modal-form" id="comment-form">
-      <textarea name="text" placeholder="コメントを入力" required maxlength="500"></textarea>
-      <button type="submit">コメントする</button>
-    </form>
-    <div class="thread-actions">
-      <button type="button" id="delete-post">投稿を削除</button>
+    <div class="thread-post">
+      <p class="author-name">${escapeHtml(post.author_name || '名無し')}</p>
+      <p class="post-text">${escapeHtml(post.text)}</p>
     </div>
+    <ul class="comments" id="comments-list"></ul>
+    <div class="thread-actions">
+      <button type="button" id="delete-post" aria-label="投稿を削除">🗑</button>
+    </div>
+    <button type="button" id="comment-fab" class="fab" aria-label="コメントを追加">＋</button>
+    <form class="modal-form comment-form hidden" id="comment-form">
+      <textarea name="text" required maxlength="500"></textarea>
+      <button type="submit" aria-label="コメントする">✓</button>
+    </form>
   `;
 
   const commentsList = document.getElementById('comments-list');
   const form = document.getElementById('comment-form');
+  const fab = document.getElementById('comment-fab');
 
   try {
     const comments = await fetchComments(post.id);
@@ -87,6 +89,12 @@ async function openThreadModal(post) {
   } catch (err) {
     commentsList.innerHTML = `<li class="error-message">${escapeHtml(err.message)}</li>`;
   }
+
+  fab.addEventListener('click', () => {
+    form.classList.remove('hidden');
+    fab.classList.add('hidden');
+    form.text.focus();
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -100,6 +108,8 @@ async function openThreadModal(post) {
       const comment = await createComment(post.id, text);
       appendCommentToThread(comment);
       form.reset();
+      form.classList.add('hidden');
+      fab.classList.remove('hidden');
       submitBtn.disabled = false;
     } catch (err) {
       showError(form, err.message);
@@ -123,19 +133,14 @@ async function openThreadModal(post) {
 }
 
 function renderComments(listEl, comments) {
-  if (comments.length === 0) {
-    listEl.innerHTML = '<li class="comments-empty">コメントはまだありません</li>';
-    return;
-  }
-
   listEl.innerHTML = comments.map(renderCommentItem).join('');
 }
 
 function renderCommentItem(comment) {
   return `
     <li>
-      ${escapeHtml(comment.text)}
-      <time>${formatDateTime(comment.created_at)}</time>
+      <p class="author-name">${escapeHtml(comment.author_name || '名無し')}</p>
+      <p class="comment-text">${escapeHtml(comment.text)}</p>
     </li>
   `;
 }
@@ -144,16 +149,13 @@ function appendCommentToThread(comment) {
   const listEl = document.getElementById('comments-list');
   if (!listEl) return;
 
-  const empty = listEl.querySelector('.comments-empty');
-  if (empty) empty.remove();
-
   if (listEl.querySelector(`[data-comment-id="${comment.id}"]`)) return;
 
   const li = document.createElement('li');
   li.dataset.commentId = comment.id;
   li.innerHTML = `
-    ${escapeHtml(comment.text)}
-    <time>${formatDateTime(comment.created_at)}</time>
+    <p class="author-name">${escapeHtml(comment.author_name || '名無し')}</p>
+    <p class="comment-text">${escapeHtml(comment.text)}</p>
   `;
   listEl.appendChild(li);
 }

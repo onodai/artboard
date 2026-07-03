@@ -5,6 +5,7 @@ create table posts (
   id uuid primary key default gen_random_uuid(),
   cell_number integer not null unique check (cell_number >= 0 and cell_number <= 24),
   text text not null,
+  author_name text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_activity_at timestamptz not null default now()
@@ -14,6 +15,7 @@ create table comments (
   id uuid primary key default gen_random_uuid(),
   post_id uuid not null references posts(id) on delete cascade,
   text text not null,
+  author_name text not null default '',
   created_at timestamptz not null default now()
 );
 
@@ -31,3 +33,31 @@ create policy "comments_insert" on comments for insert with check (true);
 
 alter publication supabase_realtime add table posts;
 alter publication supabase_realtime add table comments;
+
+-- ニックネーム機能追加（既にテーブルが存在する場合の追記分）
+alter table posts add column if not exists author_name text not null default '';
+alter table comments add column if not exists author_name text not null default '';
+
+-- DELETEイベントのpayload.oldにcell_number等の全カラムを含めるために必要
+-- (デフォルトはprimary keyのみのため、削除時にセルがUIから消えない)
+alter table posts replica identity full;
+
+-- 24時間活動のない投稿を自動削除
+-- Supabase ダッシュボード「Database > Extensions」で pg_cron を有効化してから実行してください
+
+create extension if not exists pg_cron with schema extensions;
+
+create or replace function delete_stale_posts()
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from posts where last_activity_at < now() - interval '24 hours';
+$$;
+
+select cron.schedule(
+  'delete-stale-posts',
+  '*/10 * * * *',
+  $$select delete_stale_posts()$$
+);

@@ -2,15 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>アートボード</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <main>
-    <h1>アートボード</h1>
     <div id="board" class="board" aria-label="5×5 アートボード"></div>
   </main>
+
+  <div id="nickname-gate" class="nickname-gate hidden">
+    <form id="nickname-form" class="nickname-form">
+      <input type="text" name="nickname" placeholder="名前" maxlength="20" required autocomplete="off">
+      <button type="submit" aria-label="はじめる">→</button>
+    </form>
+  </div>
 
   <div id="modal-overlay" class="modal-overlay hidden" aria-hidden="true">
     <div id="modal" class="modal" role="dialog" aria-modal="true">
