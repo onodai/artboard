@@ -1,6 +1,5 @@
 const overlay = document.getElementById('modal-overlay');
 const modalContent = document.getElementById('modal-content');
-const modalClose = document.getElementById('modal-close');
 
 function openModal() {
   overlay.classList.remove('hidden');
@@ -14,7 +13,6 @@ function closeModal() {
   openThreadPostId = null;
 }
 
-modalClose.addEventListener('click', closeModal);
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay) closeModal();
 });
@@ -33,7 +31,7 @@ function openPostModal(cellNumber) {
   modalContent.innerHTML = `
     <form class="modal-form" id="post-form">
       <textarea name="text" required maxlength="500"></textarea>
-      <button type="submit" aria-label="投稿する">✓</button>
+      <button type="submit" class="fab" aria-label="投稿する">✓</button>
     </form>
   `;
 
@@ -69,13 +67,11 @@ async function openThreadModal(post) {
       <p class="post-text">${escapeHtml(post.text)}</p>
     </div>
     <ul class="comments" id="comments-list"></ul>
-    <div class="thread-actions">
-      <button type="button" id="delete-post" aria-label="投稿を削除">🗑</button>
-    </div>
+    <button type="button" id="delete-post" class="delete-action">delete</button>
     <button type="button" id="comment-fab" class="fab" aria-label="コメントを追加">＋</button>
     <form class="modal-form comment-form hidden" id="comment-form">
       <textarea name="text" required maxlength="500"></textarea>
-      <button type="submit" aria-label="コメントする">✓</button>
+      <button type="submit" class="fab" aria-label="コメントする">✓</button>
     </form>
   `;
 

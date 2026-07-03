@@ -1,4 +1,4 @@
-const CELL_COUNT = 25;
+const CELL_COUNT = 24;
 const postsByCell = new Map();
 let openThreadPostId = null;
 
