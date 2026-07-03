@@ -11,14 +11,31 @@ let currentThreadPost = null;
 let longPressTimer = null;
 let suppressNextClick = false;
 
+function syncModalViewport() {
+  if (!window.visualViewport) return;
+  const vv = window.visualViewport;
+  overlay.style.height = `${vv.height}px`;
+  overlay.style.top = `${vv.offsetTop}px`;
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', syncModalViewport);
+  window.visualViewport.addEventListener('scroll', syncModalViewport);
+}
+
 function openModal() {
   overlay.classList.remove('hidden');
   overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  syncModalViewport();
 }
 
 function closeModal() {
   overlay.classList.add('hidden');
   overlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  overlay.style.height = '';
+  overlay.style.top = '';
   modalContent.innerHTML = '';
   modalComposer.innerHTML = '';
   modalTitle.textContent = '';
