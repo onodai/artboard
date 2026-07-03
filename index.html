@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アートボード</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main>
+    <h1>アートボード</h1>
+    <div id="board" class="board" aria-label="5×5 アートボード"></div>
+  </main>
+
+  <div id="modal-overlay" class="modal-overlay hidden" aria-hidden="true">
+    <div id="modal" class="modal" role="dialog" aria-modal="true">
+      <button type="button" id="modal-close" class="modal-close" aria-label="閉じる">×</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/board.js"></script>
+</body>
+</html>
