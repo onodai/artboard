@@ -31,8 +31,18 @@ function upsertPost(post) {
 }
 
 function removePost(post) {
-  postsByCell.delete(post.cell_number);
-  renderBoard();
+  let cellToRemove = null;
+  for (const [cellNumber, existing] of postsByCell) {
+    if (existing.id === post.id) {
+      cellToRemove = cellNumber;
+      break;
+    }
+  }
+
+  if (cellToRemove !== null) {
+    postsByCell.delete(cellToRemove);
+    renderBoard();
+  }
 
   if (openThreadPostId === post.id) {
     closeModal();
@@ -91,9 +101,7 @@ async function initBoard() {
         }
       },
       (comment) => {
-        if (openThreadPostId === comment.post_id) {
-          removeCommentFromThread(comment.id);
-        }
+        removeCommentFromThread(comment.id);
       }
     );
   } catch (err) {
