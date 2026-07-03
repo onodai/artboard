@@ -30,6 +30,7 @@ create policy "posts_delete" on posts for delete using (true);
 
 create policy "comments_select" on comments for select using (true);
 create policy "comments_insert" on comments for insert with check (true);
+create policy "comments_delete" on comments for delete using (true);
 
 alter publication supabase_realtime add table posts;
 alter publication supabase_realtime add table comments;
@@ -38,9 +39,14 @@ alter publication supabase_realtime add table comments;
 alter table posts add column if not exists author_name text not null default '';
 alter table comments add column if not exists author_name text not null default '';
 
--- DELETEイベントのpayload.oldにcell_number等の全カラムを含めるために必要
--- (デフォルトはprimary keyのみのため、削除時にセルがUIから消えない)
+-- コメント個別削除機能追加（既にテーブルが存在する場合の追記分）
+drop policy if exists "comments_delete" on comments;
+create policy "comments_delete" on comments for delete using (true);
+
+-- DELETEイベントのpayload.oldにcell_number/post_id等の全カラムを含めるために必要
+-- (デフォルトはprimary keyのみのため、削除時にセルやコメントがUIから消えない)
 alter table posts replica identity full;
+alter table comments replica identity full;
 
 -- 24時間活動のない投稿を自動削除
 -- Supabase ダッシュボード「Database > Extensions」で pg_cron を有効化してから実行してください

@@ -84,11 +84,18 @@ async function initBoard() {
       (post) => removePost(post)
     );
 
-    subscribeToComments((comment) => {
-      if (openThreadPostId === comment.post_id) {
-        appendCommentToThread(comment);
+    subscribeToComments(
+      (comment) => {
+        if (openThreadPostId === comment.post_id) {
+          appendCommentToThread(comment);
+        }
+      },
+      (comment) => {
+        if (openThreadPostId === comment.post_id) {
+          removeCommentFromThread(comment.id);
+        }
       }
-    });
+    );
   } catch (err) {
     document.getElementById('board').innerHTML =
       `<p class="error-message">${escapeHtml(err.message)}</p>`;

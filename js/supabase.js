@@ -110,6 +110,15 @@ async function createComment(postId, text) {
   return comment;
 }
 
+async function deleteComment(commentId) {
+  const { error } = await getSupabase()
+    .from('comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) throw error;
+}
+
 function subscribeToPosts(onInsert, onDelete) {
   const channel = getSupabase()
     .channel('posts-changes')
@@ -128,13 +137,18 @@ function subscribeToPosts(onInsert, onDelete) {
   return channel;
 }
 
-function subscribeToComments(onInsert) {
+function subscribeToComments(onInsert, onDelete) {
   const channel = getSupabase()
     .channel('comments-changes')
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'comments' },
       (payload) => onInsert(payload.new)
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'comments' },
+      (payload) => onDelete(payload.old)
     )
     .subscribe();
 
