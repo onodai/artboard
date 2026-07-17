@@ -56,10 +56,15 @@ modalMenu.addEventListener('click', () => {
   modalMenuDropdown.classList.toggle('hidden');
 });
 
+modalMenuDropdown.addEventListener('click', (e) => {
+  if (e.target === modalMenuDropdown) {
+    modalMenuDropdown.classList.add('hidden');
+  }
+});
+
 document.getElementById('menu-delete-chat').addEventListener('click', async () => {
   modalMenuDropdown.classList.add('hidden');
   if (!currentThreadPost) return;
-  if (!confirm('この投稿を削除しますか？')) return;
 
   try {
     await deletePost(currentThreadPost.id);
@@ -112,15 +117,12 @@ function openPostModal(cellNumber) {
   modalContent.innerHTML = '';
   modalComposer.innerHTML = `
     <form class="composer" id="post-form">
-      <button type="button" class="composer-plus" aria-label="閉じる">＋</button>
       <input type="text" name="text" class="composer-input" required maxlength="500" autocomplete="off">
       <button type="submit" class="composer-send" aria-label="投稿する">↑</button>
     </form>
   `;
 
   const form = document.getElementById('post-form');
-
-  form.querySelector('.composer-plus').addEventListener('click', closeModal);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -148,21 +150,16 @@ async function openThreadModal(post) {
   openThreadPostId = post.id;
   currentThreadPost = post;
 
-  modalTitle.textContent = truncateText(post.text);
+  modalTitle.textContent = '';
   modalMenu.classList.remove('hidden');
 
   modalContent.innerHTML = `
-    <div class="thread-post">
-      <p class="author-name">${escapeHtml(post.author_name || '名無し')}</p>
-      <p class="post-text">${escapeHtml(post.text)}</p>
-    </div>
+    <p class="thread-headline">${escapeHtml(post.text)}</p>
     <ul class="comments" id="comments-list"></ul>
   `;
 
   modalComposer.innerHTML = `
-    <button type="button" id="comment-fab" class="fab" aria-label="コメントを追加">＋</button>
-    <form class="composer comment-form hidden" id="comment-form">
-      <button type="button" class="composer-plus" aria-label="閉じる">＋</button>
+    <form class="composer" id="comment-form">
       <input type="text" name="text" class="composer-input" required maxlength="500" autocomplete="off">
       <button type="submit" class="composer-send" aria-label="コメントする">↑</button>
     </form>
@@ -170,7 +167,6 @@ async function openThreadModal(post) {
 
   const commentsList = document.getElementById('comments-list');
   const form = document.getElementById('comment-form');
-  const fab = document.getElementById('comment-fab');
 
   attachLongPress(commentsList);
 
@@ -180,18 +176,6 @@ async function openThreadModal(post) {
   } catch (err) {
     commentsList.innerHTML = `<li class="error-message">${escapeHtml(err.message)}</li>`;
   }
-
-  fab.addEventListener('click', () => {
-    form.classList.remove('hidden');
-    fab.classList.add('hidden');
-    form.text.focus();
-  });
-
-  form.querySelector('.composer-plus').addEventListener('click', () => {
-    form.reset();
-    form.classList.add('hidden');
-    fab.classList.remove('hidden');
-  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -205,8 +189,6 @@ async function openThreadModal(post) {
       const comment = await createComment(post.id, text);
       appendCommentToThread(comment);
       form.reset();
-      form.classList.add('hidden');
-      fab.classList.remove('hidden');
       submitBtn.disabled = false;
     } catch (err) {
       showError(modalContent, err.message);
@@ -217,17 +199,24 @@ async function openThreadModal(post) {
   openModal();
 }
 
+function bubbleMarkup(authorName, text) {
+  const isOwn = authorName === getNickname();
+  return {
+    isOwn,
+    html: `
+      <span class="avatar"></span>
+      <div class="bubble">${escapeHtml(text)}</div>
+    `,
+  };
+}
+
 function renderComments(listEl, comments) {
   listEl.innerHTML = comments.map(renderCommentItem).join('');
 }
 
 function renderCommentItem(comment) {
-  return `
-    <li data-comment-id="${comment.id}">
-      <p class="author-name">${escapeHtml(comment.author_name || '名無し')}</p>
-      <p class="comment-text">${escapeHtml(comment.text)}</p>
-    </li>
-  `;
+  const { isOwn, html } = bubbleMarkup(comment.author_name, comment.text);
+  return `<li class="message-row ${isOwn ? 'own' : ''}" data-comment-id="${comment.id}">${html}</li>`;
 }
 
 function appendCommentToThread(comment) {
@@ -236,12 +225,11 @@ function appendCommentToThread(comment) {
 
   if (listEl.querySelector(`[data-comment-id="${comment.id}"]`)) return;
 
+  const { isOwn, html } = bubbleMarkup(comment.author_name, comment.text);
   const li = document.createElement('li');
+  li.className = `message-row ${isOwn ? 'own' : ''}`;
   li.dataset.commentId = comment.id;
-  li.innerHTML = `
-    <p class="author-name">${escapeHtml(comment.author_name || '名無し')}</p>
-    <p class="comment-text">${escapeHtml(comment.text)}</p>
-  `;
+  li.innerHTML = html;
   listEl.appendChild(li);
 }
 

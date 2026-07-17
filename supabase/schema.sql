@@ -48,6 +48,10 @@ create policy "comments_delete" on comments for delete using (true);
 alter table posts replica identity full;
 alter table comments replica identity full;
 
+-- コメント投稿時にposts.last_activity_atを更新できるようにする（既にテーブルが存在する場合の追記分）
+drop policy if exists "posts_update" on posts;
+create policy "posts_update" on posts for update using (true) with check (true);
+
 -- 24時間活動のない投稿を自動削除
 -- Supabase ダッシュボード「Database > Extensions」で pg_cron を有効化してから実行してください
 

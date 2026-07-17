@@ -6,7 +6,7 @@
   <title>アートボード</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -24,15 +24,19 @@
   <div id="modal-overlay" class="modal-overlay hidden" aria-hidden="true">
     <div id="modal" class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <button type="button" id="modal-back" class="modal-back" aria-label="閉じる">‹</button>
+        <button type="button" id="modal-back" class="modal-back" aria-label="閉じる">
+          <img src="image/icon_back_1.png" class="modal-back-icon" alt="">
+        </button>
         <div id="modal-title" class="modal-title"></div>
-        <button type="button" id="modal-menu" class="modal-menu hidden" aria-label="メニュー">☰</button>
-        <div id="modal-menu-dropdown" class="menu-dropdown hidden">
-          <button type="button" id="menu-delete-chat" class="menu-item">delete chat</button>
-        </div>
+        <button type="button" id="modal-menu" class="modal-menu hidden" aria-label="メニュー">
+          <img src="image/icon_down_1.png" class="modal-menu-icon" alt="">
+        </button>
       </div>
       <div id="modal-content" class="modal-content"></div>
       <div id="modal-composer" class="modal-composer"></div>
+      <div id="modal-menu-dropdown" class="menu-overlay hidden">
+        <button type="button" id="menu-delete-chat" class="menu-delete-btn">delete chat</button>
+      </div>
     </div>
   </div>
 
