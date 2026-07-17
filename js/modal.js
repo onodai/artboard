@@ -1,21 +1,24 @@
 const overlay = document.getElementById('modal-overlay');
 const modalContent = document.getElementById('modal-content');
 const modalComposer = document.getElementById('modal-composer');
-const modalTitle = document.getElementById('modal-title');
 const modalBack = document.getElementById('modal-back');
-const modalMenu = document.getElementById('modal-menu');
-const modalMenuDropdown = document.getElementById('modal-menu-dropdown');
 const commentMenu = document.getElementById('comment-menu');
 
-let currentThreadPost = null;
 let longPressTimer = null;
 let suppressNextClick = false;
 
 function syncModalViewport() {
   if (!window.visualViewport) return;
   const vv = window.visualViewport;
-  overlay.style.height = `${vv.height}px`;
-  overlay.style.top = `${vv.offsetTop}px`;
+  const keyboardOpen = vv.height < window.innerHeight - 100;
+
+  if (keyboardOpen) {
+    overlay.style.height = `${vv.height}px`;
+    overlay.style.top = `${vv.offsetTop}px`;
+  } else {
+    overlay.style.height = '';
+    overlay.style.top = '';
+  }
 }
 
 if (window.visualViewport) {
@@ -38,41 +41,14 @@ function closeModal() {
   overlay.style.top = '';
   modalContent.innerHTML = '';
   modalComposer.innerHTML = '';
-  modalTitle.textContent = '';
-  modalMenu.classList.add('hidden');
-  modalMenuDropdown.classList.add('hidden');
   commentMenu.classList.add('hidden');
   openThreadPostId = null;
-  currentThreadPost = null;
 }
 
 modalBack.addEventListener('click', closeModal);
 
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay) closeModal();
-});
-
-modalMenu.addEventListener('click', () => {
-  modalMenuDropdown.classList.toggle('hidden');
-});
-
-modalMenuDropdown.addEventListener('click', (e) => {
-  if (e.target === modalMenuDropdown) {
-    modalMenuDropdown.classList.add('hidden');
-  }
-});
-
-document.getElementById('menu-delete-chat').addEventListener('click', async () => {
-  modalMenuDropdown.classList.add('hidden');
-  if (!currentThreadPost) return;
-
-  try {
-    await deletePost(currentThreadPost.id);
-    removePost(currentThreadPost);
-    closeModal();
-  } catch (err) {
-    showError(modalContent, err.message);
-  }
 });
 
 document.getElementById('comment-menu-delete').addEventListener('click', async () => {
@@ -93,9 +69,6 @@ document.addEventListener('click', (e) => {
     suppressNextClick = false;
     return;
   }
-  if (!modalMenuDropdown.classList.contains('hidden') && !modalMenuDropdown.contains(e.target) && e.target !== modalMenu) {
-    modalMenuDropdown.classList.add('hidden');
-  }
   if (!commentMenu.classList.contains('hidden') && !commentMenu.contains(e.target)) {
     commentMenu.classList.add('hidden');
   }
@@ -111,18 +84,23 @@ function showError(container, message) {
   errorEl.textContent = message;
 }
 
+function autoResizeComposerInput(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
 function openPostModal(cellNumber) {
-  modalTitle.textContent = '';
-  modalMenu.classList.add('hidden');
   modalContent.innerHTML = '';
   modalComposer.innerHTML = `
     <form class="composer" id="post-form">
-      <input type="text" name="text" class="composer-input" required maxlength="500" autocomplete="off">
+      <textarea name="text" class="composer-input" rows="1" required maxlength="500" autocomplete="off"></textarea>
       <button type="submit" class="composer-send" aria-label="投稿する">↑</button>
     </form>
   `;
 
   const form = document.getElementById('post-form');
+
+  form.text.addEventListener('input', () => autoResizeComposerInput(form.text));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -148,10 +126,6 @@ function openPostModal(cellNumber) {
 
 async function openThreadModal(post) {
   openThreadPostId = post.id;
-  currentThreadPost = post;
-
-  modalTitle.textContent = '';
-  modalMenu.classList.remove('hidden');
 
   modalContent.innerHTML = `
     <p class="thread-headline">${escapeHtml(post.text)}</p>
@@ -160,7 +134,7 @@ async function openThreadModal(post) {
 
   modalComposer.innerHTML = `
     <form class="composer" id="comment-form">
-      <input type="text" name="text" class="composer-input" required maxlength="500" autocomplete="off">
+      <textarea name="text" class="composer-input" rows="1" required maxlength="500" autocomplete="off"></textarea>
       <button type="submit" class="composer-send" aria-label="コメントする">↑</button>
     </form>
   `;
@@ -177,6 +151,8 @@ async function openThreadModal(post) {
     commentsList.innerHTML = `<li class="error-message">${escapeHtml(err.message)}</li>`;
   }
 
+  form.text.addEventListener('input', () => autoResizeComposerInput(form.text));
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = form.text.value;
@@ -189,6 +165,7 @@ async function openThreadModal(post) {
       const comment = await createComment(post.id, text);
       appendCommentToThread(comment);
       form.reset();
+      autoResizeComposerInput(form.text);
       submitBtn.disabled = false;
     } catch (err) {
       showError(modalContent, err.message);

@@ -96,14 +96,12 @@ main {
   flex: none;
   display: flex;
   align-items: flex-end;
-  background: #efefef;
   padding-top: env(safe-area-inset-top);
   padding-right: max(8px, env(safe-area-inset-right));
   padding-left: max(8px, env(safe-area-inset-left));
 }
 
-.modal-back,
-.modal-menu {
+.modal-back {
   flex: none;
   display: flex;
   align-items: center;
@@ -122,49 +120,6 @@ main {
   display: block;
   height: 13px;
   width: auto;
-}
-
-.modal-menu-icon {
-  display: block;
-  height: 22px;
-  width: auto;
-}
-
-.modal-title {
-  flex: 1;
-  min-width: 0;
-  padding: 0 8px;
-  text-align: center;
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.menu-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 5;
-}
-
-.menu-delete-btn {
-  padding: 14px 32px;
-  border: none;
-  border-radius: 999px;
-  background: #d10000;
-  color: #fff;
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .menu-item {
@@ -190,7 +145,7 @@ main {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px;
+  padding: 8px 16px 16px;
 }
 
 .modal-composer {
@@ -203,7 +158,7 @@ main {
 }
 
 .thread-headline {
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   padding: 0 16px;
   text-align: center;
   font-size: 0.875rem;
@@ -271,12 +226,16 @@ main {
 .composer-input {
   flex: 1;
   min-width: 0;
+  max-height: 120px;
   padding: 10px 16px;
   border: none;
-  border-radius: 999px;
+  border-radius: 20px;
   background: #efefef;
   font: inherit;
   font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+  overflow-y: auto;
 }
 
 .composer-send {

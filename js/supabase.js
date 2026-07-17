@@ -65,15 +65,6 @@ async function createPost(cellNumber, text) {
   return data;
 }
 
-async function deletePost(postId) {
-  const { error } = await getSupabase()
-    .from('posts')
-    .delete()
-    .eq('id', postId);
-
-  if (error) throw error;
-}
-
 async function fetchComments(postId) {
   const { data, error } = await getSupabase()
     .from('comments')
