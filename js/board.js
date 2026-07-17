@@ -2,6 +2,12 @@ const CELL_COUNT = 24;
 const postsByCell = new Map();
 let openThreadPostId = null;
 
+const boardDeleteOverlay = document.getElementById('board-delete-overlay');
+const boardDeleteConfirm = document.getElementById('board-delete-confirm');
+let boardDeleteTarget = null;
+let boardLongPressTimer = null;
+let suppressNextCellClick = false;
+
 function renderBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
@@ -50,6 +56,74 @@ function removePost(post) {
   }
 }
 
+function attachBoardLongPress() {
+  const board = document.getElementById('board');
+
+  board.addEventListener('pointerdown', (e) => {
+    const cell = e.target.closest('.cell:not(.cell-empty)');
+    if (!cell) return;
+
+    const post = postsByCell.get(Number(cell.dataset.cell));
+    if (!post) return;
+
+    boardLongPressTimer = setTimeout(() => {
+      boardLongPressTimer = null;
+      suppressNextCellClick = true;
+      showBoardDeleteOverlay(post);
+    }, 550);
+  });
+
+  board.addEventListener('pointerup', cancelBoardLongPress);
+  board.addEventListener('pointerleave', cancelBoardLongPress);
+  board.addEventListener('pointercancel', cancelBoardLongPress);
+
+  board.addEventListener(
+    'click',
+    (e) => {
+      if (suppressNextCellClick) {
+        suppressNextCellClick = false;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    },
+    true
+  );
+}
+
+function cancelBoardLongPress() {
+  if (boardLongPressTimer) {
+    clearTimeout(boardLongPressTimer);
+    boardLongPressTimer = null;
+  }
+}
+
+function showBoardDeleteOverlay(post) {
+  boardDeleteTarget = post;
+  boardDeleteOverlay.classList.remove('hidden');
+}
+
+function hideBoardDeleteOverlay() {
+  boardDeleteOverlay.classList.add('hidden');
+  boardDeleteTarget = null;
+}
+
+boardDeleteOverlay.addEventListener('click', (e) => {
+  if (e.target === boardDeleteOverlay) hideBoardDeleteOverlay();
+});
+
+boardDeleteConfirm.addEventListener('click', async () => {
+  if (!boardDeleteTarget) return;
+  const post = boardDeleteTarget;
+  hideBoardDeleteOverlay();
+
+  try {
+    await deletePost(post.id);
+    removePost(post);
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -83,6 +157,7 @@ function ensureNickname() {
 async function initBoard() {
   getUserId();
   await ensureNickname();
+  attachBoardLongPress();
 
   try {
     const posts = await fetchPosts();

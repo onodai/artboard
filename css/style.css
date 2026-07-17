@@ -18,7 +18,7 @@ textarea {
 
 body {
   margin: 0;
-  font-family: 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Noto Sans JP', system-ui, -apple-system, sans-serif;
   background: #fff;
   color: #000;
 }
@@ -46,6 +46,7 @@ main {
 .cell {
   border: none;
   background: #fff;
+  color: #000;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -263,6 +264,32 @@ main {
   background: #fff;
   border: 1px solid #ddd;
   z-index: 2;
+}
+
+.board-menu-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.menu-delete-btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 999px;
+  background: #d10000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .error-message {
